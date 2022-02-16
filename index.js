@@ -12,6 +12,7 @@ let currentResult = 0
 let currentNumber = ""
 let currentOperator = ""
 let dotCounter = 0
+let lastOperation = 0 // 0: Enter number, 1: Enter operator
 
 displayOnScreen(0)
 
@@ -20,6 +21,7 @@ for (let number of digits) {
         currentNumber += number.value
         console.log(currentNumber)
         displayOnScreen(currentNumber)
+        lastOperation = 0
     }
 }
 
@@ -32,31 +34,38 @@ dot.onclick = function() {
     }
 }
 
+
+
 for (let operator of operators) {
     operator.onclick = function() {
-        dotCounter = 0
-        let currentNumberVal = new Number(currentNumber)
-        currentOperator = operator.value
-        if (currentResult !== 0) { // In calculation (Ex: 3+2+7)
-            displayOnScreen(currentResult)
-            calculateResult(currentNumberVal)
-            displayOnScreen(currentResult)
-        } else { // New calculation
-            currentResult = new Number(currentNumber)
+        if (lastOperation === 1 && currentOperator === operator.value) { // Avoid multiple operator (+++++)
+            return
+        } else {
+            dotCounter = 0 // For decimal point
+            let currentNumberVal = parseFloat(currentNumber)
+            if (currentNumberVal !== NaN && currentResult !== 0) {
+                calculateResult(currentNumberVal)
+                displayOnScreen(currentResult)
+            } else if (currentNumberVal !== NaN && currentResult === 0){
+                currentResult = parseFloat(currentNumber)
+            }
             currentOperator = operator.value
+            currentNumber = ""
+            lastOperation = 1
         }
-        currentNumber = ""
     }
 }
 
 result.onclick = function() {
-    let currentNumberVal = new Number(currentNumber)
+    let currentNumberVal = parseFloat(currentNumber)
+    
     currentNumber = ""
     calculateResult(currentNumberVal)
     displayOnScreen(currentResult)
 
 }
-
+ 
+// Do calculation between currentResult and number
 function calculateResult(number) {
     if (currentOperator === "+") {
         currentResult += number
@@ -70,7 +79,7 @@ function calculateResult(number) {
         } else {
             currentResult *= number
         }
-    } else {
+    } else if (currentOperator === "/") {
         if (currentResult === 0) {
             currentResult = number
         } else {
